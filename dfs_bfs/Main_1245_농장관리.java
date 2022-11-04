@@ -23,77 +23,92 @@ public class Main_1245_농장관리 {
             }
         }
 
-        if (N == 1 && M == 1) {
-            System.out.println("1");
-        } else {
-            int count = 0;
-            boolean[][] visit = new boolean[N][M];
-            for (int h = 0; h < N; h++) {
-                for (int w = 0; w < M; w++) {
-                    if (!visit[h][w]) {
-                        bfs(map, visit, N, M, w, h);
+        int count = 0;
+        boolean[][] visit = new boolean[N][M];
+        for (int h = 0; h < N; h++) {
+            for (int w = 0; w < M; w++) {
+                if (!visit[h][w]) {
+                    visit[h][w] = true;
+                    if (!bfs(map, visit, N, M, w, h)) {
+                        count += 1;
+                        System.out.println("==============================");
+                    } else {
+                        System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+                    }
 
-                        // if (map[h][w] > lowest) {
-                        //     System.out.println(String.format("%d,%d", w, h));
-                        //     count += 1;
-                        // }
-
-                        // System.out.println("===============================");
-                        // for (int i = 0; i < N; i++) {
-                        //     for (int j = 0; j < M; j++) {
-                        //         System.out.print((visit[i][j] ? "1 " : "0 "));
-                        //     }
-                        //     System.out.println();
-                        // }
+                    // VISIT DEBUG
+                    for (int i = 0; i < N; i++) {
+                        for (int j = 0; j < M; j++) {
+                            System.out.print(visit[i][j] ? "1 " : "0 ");
+                        }
+                        System.out.println();
                     }
                 }
             }
-
-            System.out.println(count);
         }
+
+        System.out.println(count);
     }
 
-    private static void bfs(int[][] map, boolean[][] visit, int N, int M, int x, int y) {
+    private static boolean bfs(int[][] map, boolean[][] visit, int N, int M, int x, int y) {
         Queue<Position> queue = new LinkedList<>();
-        queue.offer(new Position(map, x, y));
+        queue.offer(new Position(map, x, y, false));
 
+        boolean hasHigher = false;
         while (!queue.isEmpty()) {
             Position pos = queue.poll();
 
-            for (int d = 0; d < 8; d++) {
-                int nx = pos.x + dw[d];
-                int ny = pos.y + dh[d];
+            while (pos.next()) {
+                int nx = pos.nx();
+                int ny = pos.ny();
 
                 if (nx < 0 || ny < 0 || nx >= M || ny >= N) continue;
 
                 if (visit[ny][nx]) continue;
 
-                // 이동할 좌표의 높이가 낮거나 동일할때
-                if (map[ny][nx] <= pos.height()) {
+                if (map[ny][nx] == pos.height()) {
                     visit[ny][nx] = true;
-                } else {
-                    // 이동할 좌표의 높이가 더 높을때
+                    queue.offer(new Position(map, nx, ny, pos.down));
+                } else if (map[ny][nx] < pos.height()) {
+                    // pos.down = true;
+                    visit[ny][nx] = true;
+                    queue.offer(new Position(map, nx, ny, true));
+                } else if (!pos.isDown()) {
+                    hasHigher = true;
                 }
-
-                queue.offer(new Position(map, nx, ny));
             }
         }
 
-        System.out.println("Done!");
+        return hasHigher;
     }
 
     private static class Position {
         final int[][] map;
         int x;
         int y;
-        public Position(int[][] map, int x, int y) {
+        int d = -1;
+        boolean down = false;
+        public Position(int[][] map, int x, int y, boolean down) {
             this.map = map;
             this.x = x;
             this.y = y;
+            this.down = down;
         }
-
         public int height() {
             return this.map[this.y][this.x];
+        }
+        public boolean next() {
+            d += 1;
+            return d < 8;
+        }
+        public int nx() {
+            return this.x + dw[this.d];
+        }
+        public int ny() {
+            return this.y + dh[this.d];
+        }
+        public boolean isDown() {
+            return this.down;
         }
     }
 }
