@@ -32,17 +32,13 @@ public class Main_7569_토마토 {
                 for (int w = 0; w < M; w++) {
                     t = Integer.parseInt(st.nextToken());
     
-                    // 빈공간이면 방문처리로 셋팅
-                    if (t == -1) t = 2;
-    
-                    // 익은 토마토이면 방문처리 후 queue에 저장
-                    if (t == 1) {
-                        t = 2;
+                    // 익힐 토마토 갯수 +1
+                    if (t == 0) {
+                        willRipeCount += 1;
+                    } else if (t == 1) {
+                        // 익은 토마토이면 queue에 저장
                         queue.offer(new Position(w, h, z));
                     }
-
-                    // 익힐 토마토 갯수 +1
-                    if (t == 0) willRipeCount += 1;
 
                     tomato[z][h][w] = t;
                 }
@@ -70,16 +66,12 @@ public class Main_7569_토마토 {
                     if (nx < 0 || ny < 0 || nz < 0) continue;
                     if (nx >= M || ny >= N || nz >= H) continue;
 
-                    // 이미 방문한 위치이거나, 익히는중인 토마토이면 무시
-                    if (tomato[nz][ny][nx] >= 2) continue;
+                    // 다음 위치가 익힐 토마토 위치가 아니면 무시
+                    if (tomato[nz][ny][nx] != 0) continue;
 
-                    // 익은 토마토이면 그쪽부터 처리
-                    if (tomato[nz][ny][nx] == 1) {
-                        tomato[nz][ny][nx] = 2; // 방문처리
-                    } else {
-                        tomato[nz][ny][nx] = 1; // 다음날에 익힐 수 있도록 표시
-                        oneCycleCount += 1;
-                    }
+                    // 다음날에 익힐 수 있도록 표시
+                    tomato[nz][ny][nx] = 1;
+                    oneCycleCount += 1;
                     queue.offer(new Position(nx, ny, nz));
                 }
             }
