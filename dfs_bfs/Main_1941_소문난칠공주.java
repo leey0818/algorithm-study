@@ -14,39 +14,61 @@ public class Main_1941_소문난칠공주 {
             map[n] = br.readLine().toCharArray();
         }
 
-        AtomicInteger caseCount = new AtomicInteger();
         boolean[][] visit = new boolean[5][5];
-        for (int h = 0; h < 5; h++) {
-            for (int w = 0; w < 5; w++) {
-                if (!visit[h][w]) {
-                    visit[h][w] = true;
-                    dfs(map, visit, w, h, 1, map[h][w] == 'Y' ? 1 : 0, caseCount);
-                    visit[h][w] = false;
-                }
-            }
-        }
+        AtomicInteger caseCount = new AtomicInteger();
+
+        dfs(map, visit, 0, 0, 0, caseCount);
 
         System.out.println(caseCount.get());
     }
 
-    private static void dfs(char[][] map, boolean[][] visit, int x, int y, int loopCount, int limCount, AtomicInteger caseCount) {
+    private static void dfs(char[][] map, boolean[][] visit, int start, int depth, int limCount, AtomicInteger caseCount) {
         if (limCount > 3) return;
-        if (loopCount >= 7) {
+        if (depth >= 7) {
             if (limCount <= 3) {
-                //DEBUG
-                System.out.println("===========");
-                for (int h = 0; h < 5; h++) {
+                AtomicInteger linkCount = new AtomicInteger();
+                label: for (int h = 0; h < 5; h++) {
                     for (int w = 0; w < 5; w++) {
-                        System.out.print(visit[h][w] ? "1 " : "0 ");
+                        if (visit[h][w]) {
+                            boolean[][] visit2 = new boolean[5][5];
+                            dfsLinkCount(visit, visit2, w, h, linkCount);
+                            break label;
+                        }
                     }
-                    System.out.println();
+                }
+
+                if (linkCount.get() == 7) caseCount.incrementAndGet();
+
+                //DEBUG
+                if (linkCount.get() == 7) {
+                    System.out.println("=====================");
+                    for (int h = 0; h < 5; h++) {
+                        for (int w = 0; w < 5; w++) {
+                            System.out.print(visit[h][w] ? "1 " : "0 ");
+                        }
+                        System.out.println();
+                    }
                 }
                 //DEBUG
-
-                caseCount.incrementAndGet();
             }
             return;
         }
+
+        for (int c = start; c < 25; c++) {
+            int x = c % 5;
+            int y = c / 5;
+
+            if (visit[y][x]) continue;
+
+            visit[y][x] = true;
+            dfs(map, visit, c + 1, depth + 1, map[y][x] == 'Y' ? limCount + 1 : limCount, caseCount);
+            visit[y][x] = false;
+        }
+    }
+
+    private static void dfsLinkCount(boolean[][] map, boolean[][] visit, int x, int y, AtomicInteger loopCount) {
+        visit[y][x] = true;
+        loopCount.incrementAndGet();
 
         for (int d = 0; d < 4; d++) {
             int nx = x + dw[d];
@@ -54,9 +76,9 @@ public class Main_1941_소문난칠공주 {
 
             if (nx < 0 || ny < 0 || nx >= 5 || ny >= 5 || visit[ny][nx]) continue;
 
-            visit[ny][nx] = true;
-            dfs(map, visit, nx, ny, loopCount + 1, map[ny][nx] == 'Y' ? limCount + 1 : limCount, caseCount);
-            visit[ny][nx] = false;
+            if (map[ny][nx]) {
+                dfsLinkCount(map, visit, nx, ny, loopCount);
+            }
         }
     }
 }
